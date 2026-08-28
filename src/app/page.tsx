@@ -1,0 +1,15 @@
+import Link from "next/link";
+
+function Mark() {
+  return <span className="brand-mark"><svg viewBox="0 0 32 32" role="img" aria-label="Verity mark"><path d="M6 8.5 16 24 26 8.5"/><path d="M10.5 8.5h11"/><circle cx="16" cy="24" r="2.5"/></svg></span>;
+}
+
+export default function Home() {
+  return <main className="landing-shell">
+    <header className="topbar"><a className="brand" href="#top"><Mark /><span>verity</span></a><nav><a href="#why">Why Verity</a><a href="#method">Method</a><Link className="nav-cta" href="/review">Open workspace <span>→</span></Link></nav></header>
+    <section className="landing-hero" id="top"><div className="hero-copy"><p className="eyebrow">Evidence before confidence</p><h1>AI can draft the claim.<br /><em>You</em> decide if it holds.</h1><p className="lede">Verity gives reviewers a clear line from generated language to source evidence, so unsupported claims are caught before they become published facts.</p><Link className="primary hero-cta" href="/review">Review a case <span>→</span></Link><p className="quiet-note">A focused workspace for human-led review.</p></div><div className="landing-instrument" aria-label="Verity review preview"><div className="instrument-top"><span>CASE / VC-1048</span><span className="instrument-state"><i /> 3 claims in review</span></div><div className="claim-preview"><div className="preview-line"><span className="mark supported">✓</span><div><span className="claim-id">CLM-001</span><strong>The pilot reduced review time by 42%.</strong><small>Pilot results, page 2</small></div></div><div className="evidence-rule"><span>source evidence</span><b>“average review time fell from 38 minutes to 22 minutes”</b></div><div className="preview-line muted-row"><span className="mark contradicted">×</span><div><span className="claim-id">CLM-003</span><strong>No reviewer intervention is required.</strong><small>Operations note, page 4</small></div></div></div><div className="instrument-bottom"><span>VERIFICATION RECEIPT</span><span>Fixture-backed / ready for review</span></div></div></section>
+    <section className="proof-strip" id="why"><div><span className="strip-kicker">The problem</span><p>Confident language can hide weak evidence.</p></div><div><span className="strip-kicker">The response</span><p>Review the claim beside the source, not after publication.</p></div><div><span className="strip-kicker">The boundary</span><p>AI flags. A human decides. The record remembers.</p></div></section>
+    <section className="method" id="method"><div className="method-label"><span className="eyebrow">The Verity method</span><span className="method-number">01—03</span></div><div className="method-rows"><div><span>01</span><h2>Extract</h2><p>Turn a report into discrete claims that can be inspected.</p></div><div><span>02</span><h2>Ground</h2><p>Put source excerpts beside the language they support or contradict.</p></div><div><span>03</span><h2>Decide</h2><p>Leave an explicit reviewer decision and a tamper-evident receipt.</p></div></div></section>
+    <footer><span>verity / evidence before confidence</span><span>Local review workspace</span></footer>
+  </main>;
+}

@@ -21,5 +21,5 @@ export function sessionEmail(cookie: string | undefined) {
 
 export function sessionFromRequest(request: Request) {
   const raw = request.headers.get("cookie")?.split(";").map((part) => part.trim()).find((part) => part.startsWith(`${SESSION_COOKIE}=`));
-  return sessionEmail(raw?.slice(SESSION_COOKIE.length + 1));
+  return sessionEmail(raw ? decodeURIComponent(raw.slice(SESSION_COOKIE.length + 1)) : undefined);
 }

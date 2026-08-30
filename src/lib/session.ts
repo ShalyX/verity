@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 export const SESSION_COOKIE = "verity_session";
 
-function secret() { return process.env["VERITY_ADMIN_TOKEN"]; }
+function secret() { return process.env["VERITY_SESSION_SECRET"] || process.env["VERITY_ADMIN_TOKEN"]; }
 function sign(value: string) { return createHmac("sha256", secret() || "").update(value).digest("base64url"); }
 
 export function createSession(email: string) {

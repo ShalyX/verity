@@ -15,6 +15,7 @@ export default function ReviewClient({ initialCase }: { initialCase: CaseRecord 
   const [selected, setSelected] = useState(initialCase.claims[0]?.id ?? "");
   const [caseStatus, setCaseStatus] = useState(initialCase.status);
   const [receipt, setReceipt] = useState(false);
+  const [syncError, setSyncError] = useState("");
 
   const active = claims.find((claim) => claim.id === selected) ?? claims[0];
   const counts = useMemo(() => ({
@@ -24,13 +25,20 @@ export default function ReviewClient({ initialCase }: { initialCase: CaseRecord 
   }), [claims]);
   if (!active) return <main className="app-shell"><section className="panel"><h1>No claims</h1><p>This case has no claims to review.</p></section></main>;
 
-  function markClaim(state: ClaimState) {
-    setClaims((current) => current.map((claim) => claim.id === selected ? { ...claim, state } : claim));
-    setReceipt(false);
+  async function markClaim(state: ClaimState) {
+    setSyncError("");
+    const response = await fetch(`/api/cases/${initialCase.id}`, { method: "PATCH", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ claimId: selected, state }) });
+    if (!response.ok) { setSyncError("Sign in to save this decision."); return; }
+    const next = await response.json() as CaseRecord;
+    setClaims(next.claims); setCaseStatus(next.status); setReceipt(false);
   }
 
-  function approveCase() {
-    setCaseStatus(counts.contradicted ? "needs-evidence" : "approved");
+  async function approveCase() {
+    setSyncError("");
+    const response = await fetch(`/api/cases/${initialCase.id}`, { method: "PATCH", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ approve: true }) });
+    if (!response.ok) { setSyncError("Sign in to save this approval."); return; }
+    const next = await response.json() as CaseRecord;
+    setClaims(next.claims); setCaseStatus(next.status); setReceipt(next.status === "approved");
   }
 
   return (
@@ -61,7 +69,7 @@ export default function ReviewClient({ initialCase }: { initialCase: CaseRecord 
         <div><span className="summary-label">Evidence coverage</span><strong>{Math.round((counts.supported / claims.length) * 100)}%</strong><span className="summary-note">{counts.supported} of {claims.length} supported</span></div>
         <div><span className="summary-label">Review state</span><strong>{caseStatus === "review" ? "Open" : caseStatus === "approved" ? "Cleared" : "Blocked"}</strong><span className="summary-note">Human decision required</span></div>
         <div><span className="summary-label">Receipt</span><strong>{receipt ? "Created" : "Pending"}</strong><span className="summary-note">Hash-backed case record</span></div>
-        <div className="summary-action"><button className="primary" onClick={approveCase}>{caseStatus === "approved" ? "Case approved" : "Approve review"}<span>→</span></button></div>
+        <div className="summary-action">{syncError && <span role="alert" className="summary-note">{syncError}</span>}<button className="primary" onClick={approveCase}>{caseStatus === "approved" ? "Case approved" : "Approve review"}<span>→</span></button></div>
       </section>
 
       <section className="review-grid" aria-label="Claim review">

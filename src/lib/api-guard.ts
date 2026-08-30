@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sessionFromRequest } from "@/lib/session";
 
 const hits = new Map<string, { count: number; resetAt: number }>();
 
@@ -20,6 +21,7 @@ export function rateLimit(request: Request, id: string) {
 export function requireAuth(request: Request, id: string) {
   const expected = process.env["VERITY_ADMIN_TOKEN"];
   if (!expected && process.env.NODE_ENV !== "production") return null;
+  if (sessionFromRequest(request)) return null;
   const actual = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
   if (!expected || actual !== expected) return NextResponse.json({ error: "UNAUTHORIZED", requestId: id }, { status: 401, headers: { "Cache-Control": "no-store" } });
   return null;

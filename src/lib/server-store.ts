@@ -14,13 +14,8 @@ let schemaPromise: Promise<void> | null = null;
 const dataDir = process.env["VERITY_DATA_DIR"] || path.join(process.cwd(), ".data");
 const storePath = path.join(dataDir, "verity.json");
 
-const initialClaims: Claim[] = [
-  { id: "CLM-001", text: "The pilot reduced review time by 42%.", state: "supported", source: "Pilot results, page 2", note: "Matches the reported sample and period." },
-  { id: "CLM-002", text: "The system works across every document type.", state: "uncertain", source: "Product brief, page 1", note: "The source only describes PDF and DOCX tests." },
-  { id: "CLM-003", text: "No reviewer intervention is required.", state: "contradicted", source: "Operations note, page 4", note: "The source requires a reviewer before publication." },
-];
-
-function seedCase(): CaseRecord { const inputHash = `sha256:${createHash("sha256").update("VC-1048:quarterly-pilot-report").digest("hex")}`; const outputHash = `sha256:${createHash("sha256").update(JSON.stringify(initialClaims)).digest("hex")}`; return { id: "VC-1048", title: "Quarterly pilot report", status: "review", claims: initialClaims, inputHash, outputHash, updatedAt: new Date().toISOString() }; }
+const seedCaseConfig = process.env["VERITY_SEED_CASE_JSON"];
+function seedCase(): CaseRecord { if (!seedCaseConfig) throw new Error("MISSING_VERITY_SEED_CASE_JSON"); const parsed = JSON.parse(seedCaseConfig) as { id: string; title: string; claims: Claim[] }; const inputHash = `sha256:${createHash("sha256").update(`${parsed.id}:${parsed.title}`).digest("hex")}`; const outputHash = `sha256:${createHash("sha256").update(JSON.stringify(parsed.claims)).digest("hex")}`; return { id: parsed.id, title: parsed.title, status: "review", claims: parsed.claims, inputHash, outputHash, updatedAt: new Date().toISOString() }; }
 async function ensureSchema() { if (!pool) return; schemaPromise ??= pool.query("CREATE TABLE IF NOT EXISTS verity_cases (id text PRIMARY KEY, record jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now())").then(() => undefined); await schemaPromise; }
 async function readFileStore(): Promise<Store> { try { return JSON.parse(await readFile(storePath, "utf8")) as Store; } catch { return { cases: { "VC-1048": seedCase() } }; } }
 async function writeFileStore(store: Store) { await mkdir(dataDir, { recursive: true }); const tmp = `${storePath}.tmp`; await writeFile(tmp, JSON.stringify(store, null, 2), { mode: 0o600 }); await rename(tmp, storePath); }

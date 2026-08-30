@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { Indexer, ZgFile } from "@0glabs/0g-ts-sdk";
+import { Indexer, ZgFile } from "@0gfoundation/0g-storage-ts-sdk";
 import { JsonRpcProvider, Wallet, Contract } from "ethers";
 
 function loadEnv() {
@@ -28,7 +28,7 @@ const file = await ZgFile.fromFilePath("artifacts/verity-receipt.json");
 const [tree, treeErr] = await file.merkleTree();
 if (treeErr) throw treeErr;
 const root = tree.rootHash();
-const [uploadTx, uploadErr] = await indexer.upload(file, process.env.ZG_CHAIN_RPC_URL, signer);
+const [uploadTx, uploadErr] = await indexer.upload(file, process.env.ZG_CHAIN_RPC_URL, signer, undefined, undefined, { gasLimit: 1_000_000n });
 await file.close();
 if (uploadErr) throw uploadErr;
 const abi = ["function anchor(bytes32 receiptHash, string uri)", "function anchoredAt(bytes32) view returns (uint64)", "function storageUri(bytes32) view returns (string)"];

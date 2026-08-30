@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 
 type ClaimState = "supported" | "uncertain" | "contradicted";
-type Claim = { id: string; text: string; state: ClaimState; source: string; note: string };
+type Claim = { id: string; text: string; state: ClaimState; source: string; page?: string; excerpt?: string; note: string };
 type CaseRecord = { id: string; title: string; status: "review" | "approved" | "needs-evidence"; claims: Claim[]; inputHash: string; outputHash: string; updatedAt: string };
 
 function Mark({ state }: { state: ClaimState }) {
@@ -40,20 +40,20 @@ export default function ReviewClient({ initialCase }: { initialCase: CaseRecord 
           <span className="brand-mark"><svg viewBox="0 0 32 32" role="img" aria-label="Verity mark"><path d="M6 8.5 16 24 26 8.5"/><path d="M10.5 8.5h11"/><circle cx="16" cy="24" r="2.5"/></svg></span>
           <span>verity</span>
         </a>
-        <div className="top-context"><span className="live-dot" /> Local review workspace <span className="slash">/</span> Case VC-1048</div>
+        <div className="top-context"><span className="live-dot" /> Review workspace <span className="slash">/</span> Case {initialCase.id}</div>
         <button className="text-button" onClick={() => setReceipt(true)}>View receipt</button>
       </header>
 
       <section className="intro" id="top">
         <div>
-          <p className="eyebrow">Verification case <span>VC-1048</span></p>
+          <p className="eyebrow">Verification case <span>{initialCase.id}</span></p>
           <h1>Review what the model said<br />before anyone ships it.</h1>
           <p className="lede">Trace every AI-generated claim to its source, resolve the gaps, and leave an evidence record a reviewer can stand behind.</p>
         </div>
         <div className="case-meta">
           <span className={`status status-${caseStatus}`}>{caseStatus === "review" ? "In review" : caseStatus === "approved" ? "Approved" : "Needs evidence"}</span>
-          <span className="meta-line">Quarterly pilot report</span>
-          <span className="meta-line">3 claims · 3 sources</span>
+          <span className="meta-line">{initialCase.title}</span>
+          <span className="meta-line">{claims.length} claims · {new Set(claims.map((claim) => claim.source)).size} sources</span>
         </div>
       </section>
 
@@ -76,15 +76,15 @@ export default function ReviewClient({ initialCase }: { initialCase: CaseRecord 
         <div className="evidence-panel panel">
           <div className="panel-head"><div><p className="eyebrow">Evidence view</p><h2>{active.id}</h2></div><Mark state={active.state} /></div>
           <div className="claim-focus"><p className="focus-label">Extracted claim</p><p className="focus-claim">{active.text}</p></div>
-          <div className="source-card"><div className="source-head"><span className="source-icon">⌁</span><div><strong>{active.source}</strong><span>Imported source excerpt</span></div><span className="source-ref">p. {active.id === "CLM-001" ? "2" : active.id === "CLM-002" ? "1" : "4"}</span></div><blockquote>{active.id === "CLM-001" ? "Across the six-week pilot, average review time fell from 38 minutes to 22 minutes, a 42% reduction." : active.id === "CLM-002" ? "The evaluation covered PDF and DOCX submissions from the pilot cohort." : "A reviewer must approve the evidence record before the report can be published."}</blockquote><div className="source-foot"><span>Source hash</span><code>sha256: 9bf2...a81c</code><span className="verified-text">Locally verified</span></div></div>
+          <div className="source-card"><div className="source-head"><span className="source-icon">⌁</span><div><strong>{active.source}</strong><span>Imported source excerpt</span></div><span className="source-ref">{active.page ? `p. ${active.page}` : "Source"}</span></div><blockquote>{active.excerpt ?? "No source excerpt has been attached to this claim."}</blockquote><div className="source-foot"><span>Source hash</span><code>{initialCase.inputHash}</code><span className="verified-text">Stored record</span></div></div>
           <div className="review-note"><span className="note-label">Reviewer note</span><p>{active.note}</p></div>
           <div className="decision-bar"><span>Change classification</span><div className="decision-buttons"><button className={active.state === "supported" ? "active supported-btn" : ""} onClick={() => markClaim("supported")}>Supported</button><button className={active.state === "uncertain" ? "active uncertain-btn" : ""} onClick={() => markClaim("uncertain")}>Needs evidence</button><button className={active.state === "contradicted" ? "active contradicted-btn" : ""} onClick={() => markClaim("contradicted")}>Contradicted</button></div></div>
         </div>
       </section>
 
-      {receipt && <section className="receipt panel" aria-live="polite"><div><p className="eyebrow">Verification receipt</p><h2>Case record created</h2><p>VC-1048 is ready for an evidence-backed reviewer handoff.</p></div><div className="receipt-data"><span>Input hash <code>sha256: 1a4c...f09e</code></span><span>Output hash <code>sha256: 9bf2...a81c</code></span><span>Proof state <b>Fixture-backed</b></span></div><button className="text-button" onClick={() => setReceipt(false)}>Dismiss</button></section>}
+      {receipt && <section className="receipt panel" aria-live="polite"><div><p className="eyebrow">Verification receipt</p><h2>Case record created</h2><p>{initialCase.id} is ready for an evidence-backed reviewer handoff.</p></div><div className="receipt-data"><span>Input hash <code>{initialCase.inputHash}</code></span><span>Output hash <code>{initialCase.outputHash}</code></span><span>Proof state <b>Stored record</b></span></div><button className="text-button" onClick={() => setReceipt(false)}>Dismiss</button></section>}
 
-      <footer><span>Verity / evidence before confidence</span><span>Fixture-backed review · 28 Aug 2026</span></footer>
+      <footer><span>Verity / evidence before confidence</span><span>{initialCase.status === "review" ? "Review workspace" : "Stored case record"}</span></footer>
     </main>
   );
 }

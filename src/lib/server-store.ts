@@ -4,7 +4,7 @@ import * as path from "node:path";
 import { Pool } from "pg";
 
 export type ClaimState = "supported" | "uncertain" | "contradicted";
-export type Claim = { id: string; text: string; state: ClaimState; source: string; note: string };
+export type Claim = { id: string; text: string; state: ClaimState; source: string; page?: string; excerpt?: string; note: string };
 export type CaseRecord = { id: string; title: string; status: "review" | "approved" | "needs-evidence"; claims: Claim[]; inputHash: string; outputHash: string; updatedAt: string };
 type Store = { cases: Record<string, CaseRecord> };
 
